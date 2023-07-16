@@ -319,35 +319,70 @@ select ename,sal*12 as '年薪' from emp;
 
 ## 13.条件查询
 
+（1）什么是条件查询？不是将表中所有的数据都查出来，只查询出来符合条件的。
+
+```mysql
+select 
+	字段1,字段2,字段3...
+from 
+	表名
+where
+	条件;
+```
+
+（2）都有哪些条件？
+
+- 等于	=
+
+查询薪资等于800的员工姓名和编号
+
+```mysql
+select ename,empno,sal from emp where sal=800;
+```
+
+![1689517040927](${picture}/1689517040927.png)
+
+- 小于	<
 
 
+查询薪资小于2000的员工信息
 
+```mysql
+select empno,ename,sal from emp where sal<2000;
+```
 
+![1689517226905](${picture}/1689517226905.png)
 
+- 小于等于 	<=
 
+- 大于        >
 
+- 大于等于        >=
 
+  
 
+- between...and... 两个值之间，等同于>= and <=         
 
+查询薪资在2450和3000之间的员工信息，包括2450和3000
 
+```mysql
+select empno,ename,sal from emp where sal>= 2450 and sal<=3000;
+```
 
+and是并且的意思
 
+![1689517560674](${picture}/1689517560674.png)
 
+```mysql
+select 
+	empno,ename,sal
+from
+	emp
+where
+	sal between 2450 and 3000;
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+注意：使用between and的时候，必须遵循左小右大。between and是闭区间，包括两端的值。
 
 
 
