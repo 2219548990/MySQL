@@ -332,9 +332,9 @@ where
 
 （2）都有哪些条件？
 
-- 等于	=
+- **等于	=**
 
-查询薪资等于800的员工姓名和编号
+*查询薪资等于800的员工姓名和编号*
 
 ```mysql
 select ename,empno,sal from emp where sal=800;
@@ -342,10 +342,9 @@ select ename,empno,sal from emp where sal=800;
 
 ![1689517040927](${picture}/1689517040927.png)
 
-- 小于	<
+- **小于	<**
 
-
-查询薪资小于2000的员工信息
+*查询薪资小于2000的员工信息*
 
 ```mysql
 select empno,ename,sal from emp where sal<2000;
@@ -353,17 +352,17 @@ select empno,ename,sal from emp where sal<2000;
 
 ![1689517226905](${picture}/1689517226905.png)
 
-- 小于等于 	<=
+- **小于等于 	<=**
 
-- 大于        >
+- **大于        >**
 
-- 大于等于        >=
+- **大于等于        >=**
 
   
 
-- between...and... 两个值之间，等同于>= and <=         
+- **between...and... 两个值之间，等同于>= and <=**         
 
-查询薪资在2450和3000之间的员工信息，包括2450和3000
+*查询薪资在2450和3000之间的员工信息，包括2450和3000*
 
 ```mysql
 select empno,ename,sal from emp where sal>= 2450 and sal<=3000;
@@ -386,31 +385,204 @@ where
 
 
 
+- **is null / is not null**
+
+*查询哪些员工的补助为null*
+
+```mysql
+select empno,enam,sal,comm from emp where comm is null;
+```
+
+注意：在数据库当中null不能使用等号进行衡量。需要使用is null。因为数据库中的null代表什么也没有，它不是一个值，所以不能使用等号衡量。
+
+![1689558736692](${picture}/1689558736692.png)
 
 
 
+- 并且	and
+
+
+*查询工作岗位是MANAGER并且工资大于2500的员工信息*
+
+```mysql
+ select empno,ename,sal,job from emp where job='MANAGER' and sal>2500;
+```
+
+![1689559228880](${picture}/1689559228880.png)
 
 
 
+- 或者	or
+
+*查询工作岗位是MANAGER和SALESMAN的员工*
+
+```mysql
+select empno,ename,sal,job from emp where job='MANAGER' or job='SALESMAN';
+```
+
+![1689559365905](${picture}/1689559365905.png)
 
 
 
+注意：and和or同时出现，and优先级较高。如果想让or先执行，需要加“小括号”。以后在开发中，如果不确定优先级，就加小括号就行了。
+
+*查询工资大于2500，并且部门编号为10或20部门的员工*
+
+```mysql
+select empno,ename,sal,deptno from emp where sal>2500 and (deptno=10 or deptno =20);
+```
+
+![1689559681311](${picture}/1689559681311.png)
 
 
 
+- **包含	in	相当于多个or****
+
+*查询工作岗位是MANAGER和SALESMAN的员工*
+
+```mysql
+select empno,ename,sal,job from emp where job='MANAGER' or job='SALESMAN';
+select empno,ename,job from emp where job in ('MANAGER','SALESMAN');
+```
+
+![1689559979692](${picture}/1689559979692.png)
 
 
 
+- **not 可以用来取非，主要用在is 和 in中**
+
+- [ ] is null
+- [ ] is not null
+- [ ] in
+- [ ] not in
 
 
 
+- **like 模糊查询**
+
+支持%或下划线匹配。
+
+%匹配任意多个字符。
+
+下划线：任意一个字符。
+
+*找出名字中含有O的*
+
+```mysql
+select empno,ename from emp where ename like '%o%';
+```
+
+![1689560543627](${picture}/1689560543627.png)
+
+*找出名字以T结尾的*
+
+```mysql
+select ename from emp where ename like '%T';
+```
+
+*找出第二个字母是A的*
+
+```mysql
+select ename from emp where ename like '_A%';
+```
+
+*找出第三个字母是R的*
+
+```mysql
+select ename from emp where ename like '__R';
+```
+
+注意：如过要找的字符中含有“%”和“_”，需要使用转义字符“\”
+
+*找出名字中有_的*
+
+```mysql
+select ename from emp where ename like '%\_';
+```
 
 
 
+## 14.排序
+
+- **按单个字段升序**
+
+*查询所有员工薪资，排序*
+
+```mysql
+select ename from emp order by sal;
+```
+
+注意：默认排序为升序，也可使用asc指定升序排序。
+
+![1689561502872](${picture}/1689561502872.png)
 
 
 
+- **按单个字段降序**
+
+*查询所有员工薪资，排序*
+
+```mysql
+select ename,sal from emp order by sal desc;
+```
+
+![1689561686360](${picture}/1689561686360.png)
 
 
-进行了一次修改
+
+- 按多个字段排序
+
+*查询员工名字和薪资，要求按照薪资升序，如果薪资一样的话，再按照名字升序排列。*
+
+```mysql
+select ename,sal from emp order by sal asc,ename asc;
+```
+
+注意：sal在前，起主导，只有sal相等的时候，才会考虑启用ename排序。
+
+![1689562710864](${picture}/1689562710864.png)
+
+
+
+- **综合小案例**
+
+*找出工资在1250到3000之间的员工信息，要求按照薪资降序排列。*
+
+```mysql
+select 
+	ename,sal 
+from 
+	emp 
+where 
+	sal between 1250 and 3000 
+order by 
+	sal desc;
+```
+
+![1689563120108](${picture}/1689563120108.png)
+
+
+
+- **关键字顺序不能变**
+
+```mysql
+select
+	...
+from
+	...
+where
+	...
+order by
+	...
+```
+
+注意：以上语句的执行顺序必须掌握：
+	第一步：from
+	第二步：where
+	第三步：select
+	第四步：order by（排序总是在最后执行！）
+
+
+
+15.数据处理函数
 
