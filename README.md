@@ -1,4 +1,4 @@
-# MySQL
+
 
 ## 1.基本概念
 
@@ -342,6 +342,7 @@ select ename,empno,sal from emp where sal=800;
 
 ![1689517040927](${picture}/1689517040927.png)
 
+- **不等于	<>或!=**
 - **小于	<**
 
 *查询薪资小于2000的员工信息*
@@ -584,5 +585,451 @@ order by
 
 
 
-15.数据处理函数
+## 15.数据处理函数
+
+单行处理函数的特点：一个输入对应一个输出。
+
+和单行处理函数相对的是：多行处理函数。（多行处理函数特点：多个输入，对应1个输出！）
+
+常见的单行处理函数：
+
+- **lower	转换小写**
+
+```mysql
+select lower(ename) from emp;
+```
+
+![1689570503334](${picture}/1689570503334.png)
+
+- **upper	转换大写**
+- **substr        取字串**
+
+substr(被截取的字符串，起始下标，截取的长度)
+
+起始下标从1开始，没有0
+
+```mysql
+select substr(ename,1,1) from emp;
+```
+
+![1689570796019](${picture}/1689570796019.png)
+
+
+
+*找出员工名字第一个字母是A的员工信息*
+
+```mysql
+//方式一：模糊查询
+select ename from emp where ename like 'A%';
+//方式二：substr()
+select ename from emp where substr(ename,1,1)='A';
+```
+
+![1689571028035](${picture}/1689571028035.png)
+
+
+
+*查询员工的姓名，并将首字母大写*
+
+```mysql
+select
+	concat(substr(ename,1,1),lower(substr(ename,2,length(ename) - 1))) 
+as 
+	result
+from 
+	emp;
+```
+
+![1689571763213](${picture}/1689571763213.png)
+
+
+
+- **concat	字符串拼接函数**
+
+```mysql
+select concat(empno,ename) from emp;
+```
+
+![1689571990496](${picture}/1689571990496.png)
+
+
+
+- **length	取长度**
+
+```mysql
+select length(ename) from emp;
+```
+
+![1689572057750](${picture}/1689572057750.png)
+
+
+
+- **trim	去空格**
+
+```mysql
+select ename from emp where ename = trim('   KING');
+```
+
+![1689572462048](${picture}/1689572462048.png)
+
+
+
+- **case..when..then..when..then..else..end**
+
+*当员工的工作岗位是MANAGER的时候，工资上调10%，当工作岗位是SALESMAN的时候，工资上调50%,其它正常。（注意：不修改数据库，只是将查询结果显示为工资上调）*
+
+```mysql
+select 
+	ename,job,sal as oldsal,
+	(case job when 'MANAGER' then sal*1.1
+			  when 'SALESMAN' then sal*1.5
+			  else sal
+			  end) as newsal
+from 
+	emp;
+```
+
+![1689573124904](${picture}/1689573124904.png)
+
+
+
+- round	四舍五入
+
+```mysql
+select 'abc' from emp;
+```
+
+select后直接跟字面量
+
+![1689577203360](${picture}/1689577203360.png)
+
+
+
+*保留整数位*
+
+```mysql
+select round(1236.567,0) as result from emp;
+```
+
+![1689577417779](${picture}/1689577417779.png)
+
+*保留一位小数*
+
+```mysql
+select round(1236.567,1) from emp;
+```
+
+![1689577596214](${picture}/1689577596214.png)
+
+*保留到十位*
+
+```mysql
+select round(1236.567,-1) as result from emp;
+```
+
+
+
+- **rand()	生成随机数**
+
+```mysql
+select rand() from emp;
+```
+
+![1689662313726](${picture}/1689662313726.png)
+
+
+
+- **ifnull	空处理函数**
+
+ifnull是空处理函数。专门处理空的。在所有数据库当中，只要有NULL参与的数学运算，最终结果就是NULL。
+
+![1689662693111](${picture}/1689662693111.png)
+
+因为comm字段中有的值为NULL，参与运算之后，最终的结果为NULL。为了避免这个现象，需要使用ifnull函数。
+
+ifnull(数据，被当做哪个值)
+
+*计算每个员工的年薪	年薪 = (月薪 + 月补助)  × 12*
+
+```mysql
+select ename,(sal + ifnull(comm,0)) * 12 as yearsal from emp;
+```
+
+补助comm为NULL时，将补助当做0。
+
+![1689663075866](${picture}/1689663075866.png)
+
+
+
+## 16.分组函数
+
+分组函数又称多行处理函数，多行处理函数的特点是：输入多行，最终输出一行。
+
+​	count()	计数
+
+​	sum()	求和
+
+​	avg()	求平均值
+
+​	max()	最大值
+
+​	min()	最小值
+
+
+
+*找出最高工资*
+
+```mysql
+select max(sal) from emp;
+```
+
+![1689663716263](${picture}/1689663716263.png)
+
+*找出最低工资*
+
+```mysql
+select min(sal) from emp;
+```
+
+![1689663729694](${picture}/1689663729694.png)
+
+*计算工资和*
+
+```mysql
+select sum(sal) from emp;
+```
+
+![1689663744395](${picture}/1689663744395.png)
+
+*计算平均工资*
+
+```mysql
+select avg(sal) from emp;
+```
+
+![1689663755324](${picture}/1689663755324.png)
+
+*计算员工数量*
+
+```mysql
+select count(ename) from emp;
+```
+
+![1689663770783](${picture}/1689663770783.png)
+
+
+
+注意：
+
+①分组函数在使用的时候必须先进行分组，然后才能使用。如果没有对数据进行分组，整张表默认为一组。
+
+②分组函数自动忽略NULL，不需要对NULL进行处理，比如使用sum()求和时，不用专门针对NULL进行任何处理
+
+![1689664102790](${picture}/1689664102790.png)
+
+③分组函数中count(*)和count(具体字段)的区别。
+
+![1689664219650](${picture}/1689664219650.png)
+
+![1689664261965](${picture}/1689664261965.png)
+
+count(具体字段)：表示统计该字段下所有不为NULL的元素的总数。
+
+count(*)：统计表当中的总行数。（只要有一行数据count则++）因为每一行记录不可能都为NULL，一行数据中有一列不为NULL，则这行数据就是有效的。
+
+④分组函数不能够直接使用在where子句中，在分组查询group by解释。
+
+⑤所有的分组函数可以组合起来一起用。
+
+```mysql
+select max(sal),min(sal),sum(sal),avg(sal),count(*) from emp;
+```
+
+
+
+## 17.分组查询※
+
+- **什么是分组查询？**
+
+在实际的应用中，可能有这样的需求，需要先进行分组，然后对每一组的数据进行操作。这个时候我们需要使用分组查询，怎么进行分组查询呢？
+			
+
+```mysql
+select
+	...
+from
+	...
+group by
+	...
+```
+
+例如：
+
+计算每个部门的工资和？	计算每个工作岗位的平均薪资？	找出每个工作岗位的最高薪资？	....
+
+
+
+- **关键字的执行顺序**
+
+```mysql
+select
+	...
+from
+	...
+where
+	...
+group by
+	...
+having
+	...
+order by
+	...
+```
+
+关键字的顺序不能颠倒。
+
+执行顺序为：
+
+from	→	where	→	group by	→	having	→	select	→	order by
+
+
+
+- **为什么分组函数不能直接使用在where后面？**
+
+select ename,sal from emp where sal > min(sal);//报错。
+
+因为分组函数在使用的时候必须先分组之后才能使用。where执行的时候，还没有分组。所以where后面不能出现分组函数。
+
+select sum(sal) from emp; 
+
+这个没有分组，为啥sum()函数可以用呢？因为select在group by之后执行。
+
+
+
+- ***找出每个工作岗位的工资和***
+
+```mysql
+select job,sum(sal) from emp group by job
+```
+
+以上这个语句的执行顺序：先从emp表中查询数据；根据job字段进行分组；然后对每一组的数据进行sum(sal)
+
+![1689665946633](${picture}/1689665946633.png)
+
+**在一条select语句当中，如果有group by语句的话，select后面只能跟：参加分组的字段，以及分组函数。其它的一律不能跟。**
+
+
+
+- ***找出每个部门的最高薪资***
+
+```mysql
+select deptno,max(sal) from emp group by deptno;
+```
+
+![1689666371755](${picture}/1689666371755.png)
+
+
+
+- ***找出“每个部门，不同工作岗位”的最高薪资***
+
+```mysql
+select deptno,job,max(sal) from emp group by deptno,job;
+```
+
+两个字段联合分组
+
+![1689666584501](${picture}/1689666584501.png)
+
+
+
+- ***使用having可以对分完组之后的数据进一步过滤***
+
+having不能单独使用，having不能代替where，having必须和group by联合使用。
+
+
+
+- ***找出每个部门最高薪资，要求显示最高薪资大于3000的***
+
+```mysql
+select deptno,max(sal) from emp group by deptno having max(sal) > 3000;
+```
+
+![1689667532280](${picture}/1689667532280.png)
+
+思考一个问题：以上的sql语句执行效率是不是低？
+
+比较低，实际上可以这样考虑：先将大于3000的都找出来，然后再分组。
+
+```mysql
+select deptno,max(sal) from emp where sal > 3000 group by deptno;
+```
+
+![1689667661147](${picture}/1689667661147.png)
+
+where和having，优先选择where，where实在完成不了了，再选择having。
+
+
+
+- **找出每个岗位的平均薪资，要求显示平均薪资大于1500的，除MANAGER岗位之外，要求按照平均薪资降序排**
+
+```mysql
+select
+	job,avg(sal) as avgsal
+from 
+	emp
+where
+	job <> 'MANAGER'
+group by
+	job
+ordre by
+	avgsal desc;
+```
+
+![1689668823634](${picture}/1689668823634.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
