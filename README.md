@@ -212,7 +212,11 @@ source 文件路径
 
 
 
-## 11.查看表中数据和结构
+# DQL语句
+
+
+
+## 1.查看表中数据和结构
 
 ![1689475830262](${picture}/1689475830262.png)
 
@@ -250,7 +254,7 @@ GRADE：工资等级	LOSAL：最低工资	HISAL：最高工资
 
 
 
-## 12.简单查询
+## 2.简单查询
 
 - 查询一个字段
 
@@ -317,7 +321,7 @@ select ename,sal*12 as '年薪' from emp;
 
 
 
-## 13.条件查询
+## 3.条件查询
 
 （1）什么是条件查询？不是将表中所有的数据都查出来，只查询出来符合条件的。
 
@@ -503,7 +507,7 @@ select ename from emp where ename like '%\_';
 
 
 
-## 14.排序
+## 4.排序
 
 - **按单个字段升序**
 
@@ -585,7 +589,7 @@ order by
 
 
 
-## 15.数据处理函数
+## 5.数据处理函数
 
 单行处理函数的特点：一个输入对应一个输出。
 
@@ -761,7 +765,7 @@ select ename,(sal + ifnull(comm,0)) * 12 as yearsal from emp;
 
 
 
-## 16.分组函数
+## 6.分组函数
 
 分组函数又称多行处理函数，多行处理函数的特点是：输入多行，最终输出一行。
 
@@ -847,7 +851,7 @@ select max(sal),min(sal),sum(sal),avg(sal),count(*) from emp;
 
 
 
-## 17.分组查询※
+## 7.分组查询※
 
 - **什么是分组查询？**
 
@@ -1021,7 +1025,7 @@ select count(distinct job) from emp;
 
 
 
-## 18.连接查询
+## 8.连接查询
 
 - **什么是连接查询？**
 
@@ -1353,47 +1357,522 @@ on
 
 
 
+## 9.子查询
+
+- **什么是子查询？**
+
+select语句中嵌套select语句，被嵌套的select语句称为子查询。
 
 
 
+- **子查询出现的位置**
+
+```mysql
+select
+	..(select).
+from
+	..(select).
+where
+	..(select).
+```
 
 
 
+- **where子句中的子查询**
+
+*找出比最低工资高的员工姓名和工资*
+
+实现思路：
+
+第一步：查询最低工资是多少
+
+```mysql
+select min(sal) from emp;
+```
+
+第二步：找出工资>800的
+
+```mysql
+select ename,sal from emp where sal > 800;
+```
+
+第三步：合并
+
+```mysql
+select ename,sal from emp where sal > (select min(sal) from emp);
+```
+
+![1689747050334](${picture}/1689747050334.png)
 
 
 
+- **from子句中的子查询**
+
+注意：from后面的子查询，可以将子查询的查询结果当做一张临时表。（技巧）
+
+*找出每个岗位的平均工资的薪资等级*
+
+第一步：找出每个岗位的平均工资
+
+```mysql
+select job,avg(sal) from emp order by job;
+```
+
+第二步：把第一步的查询结果当做一张真实存在的表t，用表t和薪资等级表s进行连接
+
+```mysql
+select 
+	t.*,s.grade
+from
+	(select job,avg(sal) as avgsal from emp group by job) t
+join
+	salgrade s
+on
+	t.avgsal between s.losal and s.hisal;
+```
 
 
 
+- **select后面的子查询**（了解）
+
+*找出每个员工的部门名称，要求显示员工名，部门名*
+
+```mysql
+select
+	e.ename,e.deptno,(select d.dname from dept d where e.deptno = d.deptno) as dname
+from 
+	emp e;
+```
+
+![1689748118718](${picture}/1689748118718.png)
+
+注意：对于select后面的子查询来说，这个子查询只能一次返回1条结果，多于1条，就报错！
 
 
 
+## 10.union
+
+union用来合并查询结果集
+
+*查询工作岗位是MANAGER和SALESMAN的员工*
+
+```mysql
+select ename,job from emp where job = 'MANAGER' or job = 'SALESMAN';
+```
+
+```mysql
+select ename,job from emp where job in('MANAGER','SALESMAN');
+```
+
+```mysql
+select ename job from emp where job = 'MANAGER'
+union
+select ename job from emp where job = 'SALESMAN';
+```
+
+![1689751265233](${picture}/1689751265233.png)
+
+union的效率要高一些。对于表连接来说，每连接一次新表，则匹配的次数满足笛卡尔积，成倍的翻。但是union可以减少匹配的次数。在减少匹配次数的情况下，还可以完成两个结果集的拼接。
+
+a 连接 b 连接 c
+	a 10条记录
+	b 10条记录
+	c 10条记录
+	匹配次数是：1000
+
+a 连接 b一个结果：10 * 10 --> 100次
+a 连接 c一个结果：10 * 10 --> 100次
+使用union的话是：100次 + 100次 = 200次。（union把乘法变成了加法运算）
+
+注意：union在进行结果集合并的时候，要求两个结果集的列数相同，列和列的数据类型要一致。
 
 
 
+## 11.limit※
+
+- **limit的作用**
+
+将查询结果集的一部分取出来。通常使用在分页查询当中。百度默认：一页显示10条记录。分页的作用是为了提高用户的体验，因为一次全部都查出来，用户体验差。可以一页一页翻页看。
 
 
 
+- **limit的使用**
+
+完整用法：limit startIndex, length
+		   startIndex是起始下标，length是长度。
+		   起始下标从0开始。
+
+缺省用法：limit 5; 这是取前5.
+
+注意：mysql中limit在order by之后执行。
+
+*按照薪资降序，取出排名在前5名的员工*
+
+```mysql
+select
+	ename,sal
+from 
+	emp
+order by 
+	sal desc
+limit 0,5
+```
+
+![1689752097760](${picture}/1689752097760.png)
 
 
 
+*取出工资排名在5-9名的员工*
+
+```mysql
+select ename,sal from emp order by sal desc limit 4,5;
+```
+
+![1689752305076](${picture}/1689752305076.png)
 
 
 
+- **分页**
+
+每页显示3条记录
+	第1页：limit 0,3		[0    1    2]
+	第2页：limit 3,3		[3    4    5]
+	第3页：limit 6,3		[6    7    8]
+	第4页：limit 9,3		[9   10 11]
+
+每页显示pageSize条记录
+	第pageNo页：limit (pageNo - 1) * pageSize  , pageSize
+
+记公式：
+	limit (pageNo-1)*pageSize , pageSize
 
 
 
+## 12.DQL语句总结
+
+```mysql
+select 
+	...
+from
+	...
+where
+	...
+group by
+	...
+having
+	...
+order by
+	...
+limit
+	...
+
+/*
+	执行顺序？
+		1.from
+		2.where
+		3.group by
+		4.having
+		5.select
+		6.order by
+		7.limit..
+*/
+```
 
 
 
+# DML语句
+
+## 1.表的创建
+
+- **建表的语法格式**
+
+建表属于DDL语句，DDL包括：create drop alter
+
+```mysql
+create table 表名(字段名1 数据类型, 字段名2 数据类型, 字段名3 数据类型);
+
+create table 表名(
+	字段名1 数据类型, 
+	字段名2 数据类型, 
+	字段名3 数据类型
+);
+/*
+	表名：建议以t_ 或者 tbl_开始，可读性强。见名知意。
+	字段名：见名知意。
+	表名和字段名都属于标识符。
+*/
+```
 
 
 
+- **mysql中的数据类型**
+
+**varchar(最长255)**
+
+可变长度的字符串；比较智能，节省空间；会根据实际的数据长度动态分配空间。
+
+优点：节省空间
+
+缺点：需要动态分配空间，速度慢。
+
+**char(最长255)**
+
+定长字符串，不管实际的数据长度是多少，分配固定长度的空间去存储数据。使用不恰当的时候，可能会导致空间的浪费。
+
+优点：不需要动态分配空间，速度快。
+
+缺点：使用不当可能会导致空间的浪费。
+
+varchar和char我们应该怎么选择？
+
+性别字段你选什么？因为性别是固定长度的字符串，所以选择char。
+
+姓名字段你选什么？每一个人的名字长度不同，所以选择varchar。
+
+**int(最长11)**
+
+数字中的整数型。等同于java的int。
+
+**bigint**
+
+数字中的长整型。等同于java中的long。
+
+**float**	
+
+单精度浮点型数据
+
+**double**
+
+双精度浮点型数据
+
+**date**
+
+短日期类型
+
+**datetime**
+
+长日期类型
+
+**clob**
+
+字符大对象，最多可以存储4G的字符串。
+
+比如：存储一篇文章，存储一个说明。
+
+超过255个字符的都要采用CLOB字符大对象来存储。
+
+Character Large OBject:CLOB
+
+**blob**
+
+二进制大对象
+
+Binary Large OBject
+
+专门用来存储图片、声音、视频等流媒体数据。往BLOB类型的字段上插入数据的时候，例如插入一个图片、视频等，需要使用IO流才行。
 
 
 
+- **创建一个学生表**
+
+学号、姓名、年龄、性别、邮箱地址
+
+```mysql
+create table t_student(
+	no int,
+	name varchar(32),
+	sex char(1),
+	age int(3),
+	email varchar(255)
+);
+```
 
 
+
+- **删除表**
+
+```mysql
+drop table t_student; #当这张表不存在时会报错
+```
+
+```mysql
+drop table if exists t_student; #如果这张表存在的话，删除
+```
+
+
+
+- **插入数据insert**
+
+```mysql
+#语法格式
+insert into 表名(字段名1，字段名2，字段名3...) values(值1，值2，值3);
+
+#注意：字段名和值要一一对应：数量要对应，数据类型要对应。
+#insert语句执行成功的话，表中一定会多一条记录，没有给其他字段指定值的话，默认值为NULL
+#insert语句中的“字段名”可以省略，省略相当于所有字段都在，对应所有值也要写上。
+```
+
+
+
+- **设置默认值default**
+
+```mysql
+create table t_student(
+	no int,
+	name varchar(32),
+	sex char(1) default 'm', #使用default可以设置默认值
+	age int(3),
+	email varchar(255)
+);
+```
+
+
+
+- **insert插入日期**
+
+格式化数字：format(数字，‘格式’)
+
+```mysql
+select ename,format(sal,'$999,999') as sal from emp;
+```
+
+![1689761384880](${picture}/1689761384880.png)
+
+
+
+**str_to_date()：将字符串varchar类型转换成date类型**
+
+**date_format：将date类型转换成具有一定格式的varchar字符串类型。**
+
+```mysql
+create table t_user(
+	id int,
+	name varchar(32),
+	birth date #生日也可以使用date日期类型
+);
+
+create table t_user(
+	id int,
+    name varchar(32),
+    birth char(10) #1990-10-11 生日可以使用字符串，没问题。
+);
+```
+
+
+
+str_to_date函数可以将字符串转换成日期类型date
+
+语法格式：str_to_date('字符串日期', '日期格式')
+
+```mysql
+/*
+mysql的日期格式：
+		%Y	年
+		%m 月
+		%d 日
+		%h	时
+		%i	分
+		%s	秒
+*/
+```
+
+```mysql
+insert into t_user(id,name,birth) 
+values(1,'zhangsan',str_to_date('01-10-1990','%d-%m-%Y'))
+
+/*
+	str_to_date函数可以把字符串varchar转换成日期date类型数据，
+	通常使用在插入insert方面，因为插入的时候需要一个日期类型的数据，
+	需要通过该函数将字符串转换成date。
+	
+	如果你提供的日期字符串是这个格式(%Y-%m-%d)，str_to_date函数就不需要了！！！
+	insert into t_user(id,name,birth) values(2, 'lisi', '1990-10-01');
+*/
+```
+
+
+
+date_format()函数可以将日期类型转换成特定格式的字符串。
+
+date_format函数：date_format(日期类型数据, '日期格式')
+
+这个函数通常使用在查询日期方面。设置展示的日期格式。
+
+```mysql
+select id,name,date_format(birth,'%m/%d/%Y') as birth from t_user;
+```
+
+```mysql
+select id,name,birth from t_user;
+/*
+	以上的SQL语句实际上是进行了默认的日期格式化，
+	自动将数据库中的date类型转换成varchar类型。
+	并且采用的格式是mysql默认的日期格式：'%Y-%m-%d'
+*/
+```
+
+
+
+- **date和datetime两个类型的区别**
+
+date是短日期：只包括年月日信息。
+
+datetime是长日期：包括年月日时分秒信息。
+
+```mysql
+drop table if exists t_user;
+create table t_user(
+	id int,
+	name varchar(32),
+	birth date,
+	create_time datetime #长日期类型
+);
+```
+
+mysql短日期默认格式：%Y-%m-%d
+
+mysql长日期默认格式：%Y-%m-%d %h:%i:%s
+
+```mysql
+insert into 
+t_user(id,name,birth,create_time) 
+values(1,'zhangsan','1990-10-01','2020-03-18 15:49:50');
+```
+
+
+
+**使用now()可以获取系统当前时间**
+
+```mysql
+insert into t_user(id,name,birth,create_time) values(2,'lisi','1991-10-01',now());
+```
+
+
+
+- **修改update**
+
+```mysql
+#语法格式
+update	
+	表名
+set 
+	字段名1=值1，字段名2=值2，字段名3=值3...
+where
+	条件;
+	
+#注意：没有条件限制会导致所有数据全部更新
+```
+
+
+
+- **删除数据delete**
+
+```mysql
+#语法格式
+delete from 表名 where 条件；
+
+#注意：没有条件，整张表的数据会删除
+```
 
 
 
