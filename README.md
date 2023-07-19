@@ -989,6 +989,372 @@ ordre by
 
 
 
+- ***distinct	把查询结果去除重复记录***
+
+注意：原表数据不会修改，只是查询结果去重。
+
+distinct只能出现在所有字段的最前方
+
+```mysql
+select distinct job from emp;
+```
+
+![1689679484422](${picture}/1689679484422.png)
+
+```mysql
+select distinct job,deptno from emp;
+```
+
+distinct出现在两个字段之前，表示两个字段联合起来去重。
+
+![1689679643317](${picture}/1689679643317.png)
+
+
+
+*统计岗位数量*
+
+```mysql
+select count(distinct job) from emp;
+```
+
+![1689679805811](${picture}/1689679805811.png)
+
+
+
+## 18.连接查询
+
+- **什么是连接查询？**
+
+从一张表中单独查询，称为**单表查询**。emp表和dept表联合起来查询数据，从emp表中取员工名字，从dept表中取部门名字。这种跨表查询，多张表联合起来查询数据，被称为**连接查询**。
+
+
+
+- **连接查询的分类**
+
+**根据语法的年代分类：**
+
+SQL92：1992年的时候出现的语法
+
+SQL99：1999年的时候出现的语法
+
+我们这里重点学习SQL99.(这个过程中简单演示一个SQL92的例子)
+	
+
+**根据表连接的方式分类：**
+
+内连接：等值连接，非等值连接，自连接
+
+外连接：左外连接（左连接），右外连接（右连接），全连接（不讲）
+
+
+
+- **当两张表进行连接查询时，没有任何条件的限制会发生什么现象？**
+
+*查询每个员工所在部门名称*
+
+```mysql
+select ename,dname from emp,dept;
+```
+
+两张表连接没有任何条件限制
+
+![1689730136847](${picture}/1689730136847.png)
+
+当两张表进行连接查询，没有任何条件限制的时候，最终查询结果条数，是两张表条数的乘积，这种现象被称为：笛卡尔积现象。（笛卡尔发现的，这是一个数学现象。）
+
+
+
+- **如何避免笛卡尔积现象？**
+
+连接查询时加条件限制，满足这个条件的记录会被筛选出来。
+
+*查询每个员工所在部门名称*
+
+```mysql
+#方式一
+select
+	ename,dname
+from 
+	emp,dept
+where
+	emp.deptno = dept.deptno;
+```
+
+```mysql
+#方式二
+select
+	emp.ename,dept.dname
+from
+	emp,dept
+where
+	emp.deptno = dept.deptno;
+/*
+	给表起别名很重要，涉及到效率问题。有别名后，如上例所示，ename会直接在emp表中找，
+	不会再去dept表中找，dname也是同样的道理，从而提高了查询效率。
+*/
+```
+
+```mysql
+#方式三
+#SQL92语法
+select 
+	e.ename,d,dname
+from 
+	emp e,dept d
+where
+	e.deptno = d.deptno;
+```
+
+![1689731086926](${picture}/1689731086926.png)
+
+思考：最终查询的结果条数是14条，但是匹配的过程中，匹配的次数减少了吗？还是56次，只不过进行了四选一。次数没有减少。
+
+注意：通过笛卡尔积现象得出，表的连接次数越多效率越低，尽量避免表的连接次数。
+
+
+
+- **内连接之等值连接**
+
+*查询每个员工所在部门名称，显示员工名和部门名*
+
+思路：emp e和dept d表进行连接。条件是：e.deptno = d.deptno
+
+```mysql
+#SQL92语法
+select
+	e.ename,d.dname
+from 
+	emp e,dept d
+where
+	e.deptno = d.deptno;
+/*
+	sql92的缺点：结构不清晰，表的连接条件，和后期进一步筛选的条件，都放到了where后面。
+*/
+```
+
+```mysql
+#SQL99语法
+select
+	e.ename,d.dname
+from
+	emp e
+inner join #inner可以省略，带着可读性好
+	dept d
+on
+	e.deptno = d.deptno; #条件是等量关系，所以称为等值连接。
+/*
+	sql99优点：表连接的条件是独立的，连接之后，如果还需要进一步筛选，再往后继续添加where
+*/
+```
+
+
+
+- **SQL99语法**
+
+```mysql
+
+select 
+	...
+from
+	a
+join
+	b
+on
+	a和b的连接条件
+where
+	筛选条件
+```
+
+
+
+- **内连接之非等值连接**
+
+*找出每个员工的薪资等级，要求显示员工名、薪资、薪资等级。*
+
+```mysql
+select 
+	e.ename,e.sal,s.grade
+from 
+	emp e
+join
+	salgrade s
+on
+	e.sal between s.losal and s.hisal;#条件不是一个等量关系，称为非等值连接
+```
+
+![1689732623009](${picture}/1689732623009.png)
+
+
+
+- **内连接之自连接**
+
+*查询员工的上级领导，要求显示员工名和对应领导名*
+
+思路：将一张表看做两张表
+
+```mysql
+select 
+	a.ename,b.ename
+from
+	emp a
+join
+	emp b
+on
+	a.mgr = b.empno; #员工的领导编号=领导的员工编号
+```
+
+![1689733526118](${picture}/1689733526118.png)
+
+注意：查询结果只有13条记录，KING没有上级领导，所以没有显示。
+
+```mysql
+#内连接：A和B两张表没有主次关系，平等的。
+select
+	a.xxx,b.xxx
+from 
+	... a
+join
+	... b
+on
+	a.xxx = b.xxx #内连接的特点，完全能够匹配上这个条件的数据查询出来
+```
+
+
+
+- **外连接（右外连接）**
+
+```mysql
+select
+	e.ename,d.dname
+from
+	emp e
+right outer join #outer可以省略，带着可读性强
+	dept d
+on
+	e.deptno = d.deptno;
+/*
+	right代表什么：表示将join关键字右边的这张表看成主表，主要是为了将
+	这张表的数据全部查询出来，捎带着关联查询左边的表。
+	在外连接当中，两张表连接，产生了主次关系。
+*/
+```
+
+
+
+- **外连接（左外连接）**
+
+```mysql
+select
+	e.ename,d.dname
+from
+	dept d
+left join
+	emp e
+on e.deptno = d.deptno;
+/*
+	带有right的是右外连接，又叫做右连接。
+	带有left的是左外连接，又叫做左连接。
+	任何一个右连接都有左连接的写法。
+	任何一个左连接都有右连接的写法。
+	外连接的查询结果条数一定是 >= 内连接的查询结果条数
+*/
+```
+
+![1689735059196](${picture}/1689735059196.png)
+
+
+
+*查询每个员工的上级领导，要求显示所有员工的名字和领导名*
+
+```mysql
+select
+	a.ename as '员工名',b.ename as '领导名'
+from
+	emp a
+left join
+	emp b
+on
+	a.mgr = b.empno;
+```
+
+![1689735423914](${picture}/1689735423914.png)
+
+
+
+- **多张表连接查询**
+
+```mysql
+#语法：
+select 
+	...
+from
+	a
+join
+	b
+on
+	a和b的连接条件
+join
+	c
+on
+	a和c的连接条件
+right join
+	d
+on
+	a和d的连接条件
+
+#一条SQL中内连接和外连接可以混合。都可以出现！
+```
+
+
+
+*找出每个员工的部门名称以及工资等级，要求显示员工名、部门名、薪资、薪资等级*
+
+```mysql
+select 
+	e.ename,d.dname,e.sal,s.grade
+from
+	emp e
+join
+	dept d
+on
+	e.deptno = d.deptno
+join
+	salgrade s
+on
+	e.sal between s.losal and s.hisal;
+```
+
+![1689736414652](${picture}/1689736414652.png)
+
+
+
+*找出每个员工的部门名称、工资等级以及上级领导，要求显示员工名、领导名、部门名、薪资、薪资等级*
+
+```mysql
+select
+	a.ename as '员工名',b.ename as '领导名',d.dname,a.sal,s.grade
+from
+	emp a
+left join
+	emp b
+on
+	a.mgr = b.empno;
+join
+	dept d
+on
+	a.deptno = d.deptno
+join
+	salgrade s
+on
+	a.sal between s.lowsal and s.hisal;
+```
+
+![1689737105661](${picture}/1689737105661.png)
+
+
+
+
+
 
 
 
