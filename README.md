@@ -1,8 +1,10 @@
 
 
-## 1.基本概念
+# 1.基本概念
 
-1.什么是数据库？什么是数据库管理系统？什么是SQL？他们之间的关系是什么？
+## 1.概念
+
+- **什么是数据库？什么是数据库管理系统？什么是SQL？他们之间的关系是什么？**
 
 - **数据库**：英文单词DataBase，简称DB。按照一定格式存储数据的一些文件的组合。顾名思义：存储数据的仓库，实际上就是一堆文件。这些文件中存储了具有特定格式的数据。
 
@@ -19,13 +21,9 @@ DBMS--执行--> SQL --操作--> DB
 
 
 
+## 2.MySQL服务
 
-
-
-
-
-
-## 4.看一下计算机上的服务，找一找MySQL的服务在哪里？
+- **看一下计算机上的服务，找一找MySQL的服务在哪里？**
 
 计算机-->右键-->管理-->服务和应用程序-->服务-->找mysql服务。MySQL的服务，默认是“启动”的状态，只有	启动了mysql才能用。默认情况下是“自动”启动，自动启动表示下一次重启操作系统的时候，自动启动该服	务。
 
@@ -44,7 +42,7 @@ DBMS--执行--> SQL --操作--> DB
 
 
 
-## 5.在windows操作系统当中，怎么使用命令来启动和关闭mysql服务呢？
+- **在windows操作系统当中，怎么使用命令来启动和关闭mysql服务呢？**
 
 语法：
 	net stop 服务名称;
@@ -54,7 +52,7 @@ DBMS--执行--> SQL --操作--> DB
 
 
 
-## 6.mysql安装了，服务启动了，怎么使用客户端登录mysql数据库呢？
+- **mysql安装了，服务启动了，怎么使用客户端登录mysql数据库呢？**
 
 - **显示登录密码的方式**
 
@@ -76,9 +74,9 @@ mysql -u root -p
 
 ![1689473685025](${picture}/1689473685025.png)
 
+## 
 
-
-## 7.mysql常用命令：
+## 3.mysql常用命令
 
 - 退出mysql
 
@@ -144,7 +142,9 @@ select database();
 
 
 
-## 8.数据库当中最基本的单元是表：table
+## 4.表
+
+数据库当中最基本的单元是表：table
 
 什么是表table？为什么用表来存储数据呢？
 
@@ -167,7 +167,7 @@ select database();
 
 
 
-## 9.关于SQL语句的分类
+## 5.SQL语句的分类
 
 SQL语句有很多，最好进行分门别类，这样更容易记忆。
 
@@ -198,7 +198,9 @@ SQL语句有很多，最好进行分门别类，这样更容易记忆。
 
 
 
-## 10.导入一下提前准备好的数据：
+## **6.导入数据**
+
+- **导入一下提前准备好的数据**
 
 bjpowernode.sql文件是用来后续练习使用的数据库表。
 
@@ -212,7 +214,7 @@ source 文件路径
 
 
 
-# DQL语句
+# 2.DQL语句
 
 
 
@@ -1580,7 +1582,7 @@ limit
 
 
 
-# DML语句
+# 3.DML&DDL语句
 
 ## 1.表的创建
 
@@ -1873,6 +1875,418 @@ delete from 表名 where 条件；
 
 #注意：没有条件，整张表的数据会删除
 ```
+
+
+
+- **insert语句一次插入多条记录**
+
+```mysql
+insert into t_user(id,name,birth,create_time) values
+    (1,'zhangsan','1998-06-01',now()),
+    (2,'lisi','2000-05-03',now()),
+    (3,'xiaoming','2005-10-16',now());
+```
+
+
+
+- **快速创建表（了解）**
+
+```mysql
+create table emp2 as select * from emp;
+```
+
+原理：将一个查询结果当做一张表新建，可以快速完成表的复制，同时也能将表中的数据复制过来。
+
+
+
+- **将查询结果插入到一张表中（了解）**
+
+```mysql
+insert into emp2 select * from emp;
+```
+
+
+
+- **快速删除表中的数据**
+
+```mysql
+delete from emp2;#这种方式删除数据比较慢
+```
+
+delete语句删除数据的原理：
+
+表中的数据被删除了，但是数据在硬盘上的真实存储空间不会被释放。
+
+缺点：删除效率比较低
+
+优点：支持回滚，可以恢复数据
+
+
+
+```mysql
+truncate table 表名;#属于DDL操作
+```
+
+truncate语句删除数据的原理：
+
+删除效率高，表被一次截断，物理删除
+
+缺点：不支持回滚
+
+优点：快速
+
+
+
+- **删除表**
+
+以上两种操作都是删除表中的数据，删除表可以使用如下语句
+
+```mysql
+drop table 表名;
+```
+
+
+
+## 2.对表结构的增删改
+
+- 什么是对表结构的修改？
+
+添加一个字段，删除一个字段，修改一个字段。
+
+对表结构的修改需要使用：alter，属于DDL语句。
+
+DDL包括：create drop alter
+
+
+
+实际开发中，需求确定之后，表设计完成后，很少对表结构进行修改。因为开发过程中，修改表结构，成本比较高。修改表结构，对应的操作数据表的代码就要进行大量的修改。
+
+修改表结构的操作少，且不需要掌握，如果真的需要修改表结构，可以使用工具。
+
+
+
+# 4.约束※
+
+## 1.概念
+
+- **什么是约束？**
+
+约束对应的英语单词：constraint
+
+在创建表的时候，我们可以给表中的字段加上一些约束，来保证这个表中数据的完整性、有效性。
+
+约束的作用就是为了保证：表中的数据有效。
+
+
+
+- **约束包括哪些？**
+
+  非空约束：not null
+
+  唯一性约束: unique
+
+  主键约束: primary key （简称PK）
+
+  外键约束：foreign key（简称FK）
+
+  检查约束：check（mysql不支持，oracle支持）
+
+
+
+## 2.非空约束
+
+非空约束not null约束的字段不能为NULL。
+
+```mysql
+drop table if exists t_vip;
+create table t_vip(
+	id int,
+    name varchar(255) not null #not null只有列级约束，没有表级约束
+);
+
+insert into t_vip(id,name) values(1,'zhangsan');
+insert into t_vip(id,name) values(2,'lisi');
+```
+
+补充：以.sql结尾的文件被称为sql脚本文件，sql脚本文件中编写了大量的sql语句。执行sql脚本文件的时候，该文件中所有的sql语句会全部执行。
+
+如何在MySQL中执行sql脚本？
+
+```mysql
+source 文件路径
+```
+
+
+
+## 3.唯一性约束
+
+- **唯一性约束unique约束的字段不能重复，但是可以为NULL**
+
+```mysql
+drop table if exists t_vip;
+create table t_vip(
+	id int,
+	name varchar(255) unique,#唯一性约束
+	email varchar(255)
+);
+
+insert into t_vip(id,name,email) values(1,'zhangsan1','zhangsan@123.com');
+insert into t_vip(id,name,email) values(2,'lisi','lisi@123.com');
+insert into t_vip(id,name,email) values(3,'wangwu','wangwu1@123.com');
+
+#name字段有唯一性约束，不能插入重复的数据，会报错
+insert into t_vip(id,name,email) values(4,'wangwu','wangwu@sina.com');
+
+#具有唯一性约束的字段可以为NULL
+insert into t_vip(id) values(4);
+insert into t_vip(id) valuse(5);
+
+
+
+```
+
+
+
+- **使name和email两个字段联合起来具有唯一性**
+
+```mysql
+drop table if exists t_vip;
+create table t_vip(
+	id int,
+    name varchar(255),
+    email varchar(255),
+    unique(name,email) #约束没有添加在列的后面，这种约束被称为表级约束
+);
+
+#name和email字段联合起来唯一
+insert into t_vip(id,name,email) values(1,'zhangsan','zhangsan@123.com');
+insert into t_vip(id,name,email) valuse(2,'zhangsan','zhangsan@sina.com');
+
+#需要使多个字段联合起来具有唯一性时，使用表级约束
+```
+
+
+
+- **unique和not null可以联合使用**
+
+```mysql
+drop table if exists t_vip;
+create table t_vip(
+	id int,
+    name varchar(255) not null unique
+);
+
+/*
+	在mysql中，如果一个字段同时被not null和unique约束，该字段自动变为主键字段
+	（oracle不一样）
+*/
+```
+
+
+
+
+
+
+
+## 4.主键约束※
+
+- **相关术语**
+
+主键约束：就是一种约束。
+
+主键字段：该字段上添加了主键约束，这样的字段叫做：主键字段
+
+主键值：主键字段中的每一个值都叫做：主键值。
+
+
+
+- **什么是主键？**
+
+主键值是每一行记录的唯一标识。
+
+主键值是每一行记录的身份证号
+
+任何一张表都应该有主键，没有主键，表无效。
+
+主键的特征：not null + unique（主键值不能是NULL，同时也不能重复！）
+
+
+
+- 如何给一张表添加主键约束
+
+```mysql
+drop table if exists t_vip;
+create table t_vip(
+	id int primary key,#列级约束
+    name varchar(255)
+);
+```
+
+```mysql
+drop table if exists t_vip;
+create table t_vip(
+	id int,
+    name varchar(255), 
+    primary key(id) #表级约束
+);
+```
+
+
+
+- **表级约束主要是给多个字段联合起来添加约束**
+
+```mysql
+drop table if exists t_vip;
+create table t_vip(
+	id int,
+    name varchar(255),
+    primary key(id,name)
+);
+```
+
+在实际开发中，不建议使用复合主键，建议使用单一主键，因为主键存在的意义就是这行记录的唯一性，只要意义达到即可，单一主键可以达到效果。
+
+
+
+主键值建议使用：int、bigint、char等类型
+
+不建议使用varchar做主键，主键值一般都是数字，都是定长的。
+
+
+
+主键还可以分为：
+
+自然主键：主键值是一个自然数，和业务没关系
+
+业务主键：主键值和业务紧密关联，例如用银行卡账号做主键值，这就是业务主键
+
+在实际开发中，自然主键使用的更多。因为主键只要做到不重复就行，不需要有意义。业务主键不好，因为主键一旦和业务挂钩，当业务发生变动时，可能会影响主键值，所以不建议使用业务主键。
+
+
+
+- **在mysql中，有一种机制，可以帮助自动维护一个主键**
+
+```mysql
+drop table if exists t_vip;
+create table t_vip(
+	id int primary key auto_increment, #auto_increment表示自增，从1开始，以1递增
+	name varchar(255)
+);
+```
+
+
+
+## 5.外键约束※
+
+- **相关术语**
+
+外键约束：一种约束（foreign key）
+
+外键字段：该字段上添加了外键约束
+
+外键值：外键字段当中的每一个值。
+
+```mysql
+/*
+业务背景：请设计数据库表，来描述“班级和学生”的信息
+
+第一种方案：班级和学生存储在一张表中
+no(pk)			name	 			classno				classname
+-------------------------------------------------------------------
+1				jack				100					高三一班			
+2				lucy				100					高三一班
+3				tom					100					高三一班
+4				lilei				101					高三二班
+5				lusi				101					高三二班
+6				xiaoming			101					高三二班
+
+分析以上方案的缺点：数据冗余，空间浪费。
+*/
+
+/*
+第二种方案：班级一张表，学生一张表
+t_class 班级表
+classno(pk)				classname
+-----------------------------------
+100						高三一班
+101						高三二班
+
+t_student 学生表
+no(pk)			name	 			classno				
+---------------------------------------------
+1				jack				100							
+2				lucy				100					
+3				tom					100					
+4				lilei				101					
+5				lusi				101					
+6				xiaoming			101				
+
+	当cno字段没有任何约束的时候，可能会导致数据无效。可能出现一个102，但是102班级不存在。
+	所以为了保证cno字段中的值都是100和101，需要给cno字段添加外键约束。
+	那么：cno字段就是外键字段。cno字段中的每一个值都是外键值。
+
+*/
+
+#先创建父表
+create table t_class(
+	classno int primary key,
+    classname(255)
+);
+
+#再创建字表
+create table t_student(
+	no int primary key,
+    name varchar(255),
+    classno int,
+    foreign key(classno) references t_class(classno)
+);
+
+#先向父表插入数据
+insert into t_class(classno,classname) values(100,'高三一班');
+insert into t_class(classno,classname) values(101,'高三二班');
+
+#再向子表添加数据
+insert into t_class(no,name,classno) values
+(1,'jack',100),
+(2,'lucy',100),
+(3,'tom',100),
+(4,'lilei',101),
+(5,'lusi',101),
+(6,'xiaoming',101);
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
